@@ -1,0 +1,6 @@
+id,name,model_id,group_id/id,operation,domain
+access_hr_resignation,access_resignation,hr.resignation,hr.group_hr_manager,crud,
+access_hr_resignation_checklist,access_hr_resignation_checklist,hr.resignation.checklist,base.group_user,cru,
+access_hr_resignation_checklist_hr_user,access_hr_resignation_checklist_hr_user,hr.resignation.checklist,hr.group_hr_user,crud,
+access_hr_resignation_checklist_template,access_hr_resignation_checklist_template,hr.resignation.checklist.template,base.group_user,r,
+access_hr_resignation_checklist_template_manager,access_hr_resignation_checklist_template_manager,hr.resignation.checklist.template,hr.group_hr_manager,crud,

@@ -4,9 +4,9 @@
         <record id="bhs_employee_resignation_tree" model="ir.ui.view">
             <field name="name">hr.resignation.tree</field>
             <field name="model">hr.resignation</field>
-            <field name="inherit_id" ref="hr_resignation.employee_resignation_tree"/>
+            <field name="inherit_id" ref="hr_resignation.hr_resignation_view_tree"/>
             <field name="arch" type="xml">
-                <xpath expr="//tree" position="attributes">
+                <xpath expr="//list" position="attributes">
                     <attribute name="decoration-info">state == 'draft'</attribute>
                     <attribute name="decoration-success">state == 'approved'</attribute>
                     <attribute name="decoration-danger">state == 'confirm'</attribute>
@@ -19,18 +19,18 @@
         <record id="bhs_employee_resignation_form" model="ir.ui.view">
             <field name="name">hr.resignation.form</field>
             <field name="model">hr.resignation</field>
-            <field name="inherit_id" ref="hr_resignation.employee_resignation_form"/>
+            <field name="inherit_id" ref="hr_resignation.hr_resignation_view_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='state']" position="replace">
                     <field name="state" widget="statusbar" statusbar_visible="draft,confirm,manager_approved,handed_over"/>
                 </xpath>
-                <xpath expr="//button[@name='approve_resignation']" position="replace">
+                <xpath expr="//button[@name='action_approve_resignation']" position="replace">
                     <button string="Manager Approve" type="object" groups="hr.group_hr_user" name="manager_approved_resignation" invisible="state != 'confirm'" class="oe_highlight"/>
                     <button string="Complete Hand over" type="object" name="complete_hand_over_resignation" invisible="state != 'manager_approved'" class="oe_highlight"/>
                     <button string="Approve" type="object" groups="hr.group_hr_manager" name="approve_resignation" invisible="state != 'handed_over'" class="oe_highlight"/>
                 </xpath>
-                <xpath expr="//button[@name='reject_resignation']" position="replace">
-                    <button string="Reject" type="object" groups="hr.group_hr_user" name="reject_resignation" invisible="state not in ['confirm','manager_approved','handed_over']"/>
+                <xpath expr="//button[@name='action_reject_resignation']" position="replace">
+                    <button string="Reject" type="object" groups="hr.group_hr_user" name="action_reject_resignation" invisible="state not in ['confirm','manager_approved','handed_over']"/>
                 </xpath>
                 <xpath expr="//field[@name='employee_contract']" position="attributes">
                     <attribute name="readonly">True</attribute>
@@ -55,13 +55,38 @@
                             </group>
                         </group>
                         <field name="checklist_ids">
-                            <tree editable="bottom" class="task_checklist" limit="200" create="0">
+                            <list editable="bottom" class="task_checklist" limit="200" create="0">
                                 <field name="sequence" widget="handle"/>
                                 <field name="check_box" string=" "/>
                                 <field name="name" placeholder="e.g. Just do it" decoration-muted="check_box == True" readonly="1" force_save="1"/>
                                 <field name="type" decoration-info="type == 'employee'" decoration-warning="type == 'manager'" decoration-danger="type == 'hr'" readonly="1" force_save="1"/>
-                            </tree>
+                            </list>
                         </field>
+                    </group>
+                </xpath>
+                <xpath expr="//sheet/group[1]" position="inside">
+                    <group string="Revoked Allocation">
+                        <div class="o_td_label">
+                                <label for="used_allocation" string="Used Allocation" readonly="state == 'approved'"/>
+                            </div>
+                        <div name="used_allocation_display">
+                            <field name="used_allocation" nolabel="1" style="width: 5rem;" readonly="change_employee == False or state == 'approved'"/>
+                            <span class="m18">Days</span>
+                        </div>
+                        <div class="o_td_label">
+                                <label for="worked_month" string="Worked Month" readonly="state == 'approved'"/>
+                            </div>
+                        <div name="worked_month_display">
+                            <field name="worked_month" nolabel="1" style="width: 5rem;" readonly="change_employee == False or state == 'approved'"/>
+                            <span class="m18">Months</span>
+                        </div>
+                        <div class="o_td_label">
+                                <label for="revoked_allocation" string="Revoked Allocation" readonly="state == 'approved'"/>
+                            </div>
+                        <div name="revoked_allocation_display">
+                            <field name="revoked_allocation" nolabel="1" style="width: 5rem;" readonly="change_employee == False or state == 'approved'"/>
+                            <span class="m18">Days</span>
+                        </div>
                     </group>
                 </xpath>
             </field>
@@ -72,19 +97,19 @@
             <field name="model">hr.resignation.checklist.template</field>
             <field name="priority" eval="8" />
             <field name="arch" type="xml">
-                <tree string="Employee Resignation Checklist Template" editable="top">
+                <list string="Employee Resignation Checklist Template" editable="top">
                     <field name="sequence" widget="handle"/>
                     <field name="name"/>
                     <field name="type"/>
                     <field name="use_for"/>
-                </tree>
+                </list>
             </field>
         </record>
 
         <record model="ir.actions.act_window" id="view_employee_resignation_checklist_template_act">
             <field name="name">Employee Resignation Checklist Template</field>
             <field name="res_model">hr.resignation.checklist.template</field>
-            <field name="view_mode">tree</field>
+            <field name="view_mode">list</field>
             <field name="domain">[]</field>
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">Employee Resignation Checklist Template
@@ -101,12 +126,23 @@
         />
 
 
-        <record id='hr_resignation.view_employee_resignation' model='ir.actions.act_window'>
+        <record id='hr_resignation.hr_resignation_action' model='ir.actions.act_window'>
             <field name="name">Employee Resignation</field>
+            <field name="path">resignation</field>
             <field name="res_model">hr.resignation</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">list,form</field>
             <field name="domain">[('state', 'in', ('draft', 'confirm','manager_approved','handed_over','cancel'))]</field>
         </record>
+
+        <record id='hr_resignation.hr_resignation_approved_action' model='ir.actions.act_window'>
+            <field name="path">resignation-approved</field>
+        </record>
+
+        <record id="hr_resignation.hr_resignation_menu_root" model="ir.ui.menu">
+            <field name="parent_id" ref="hr.menu_hr_root" />
+            <field name="sequence" eval="21" />
+        </record>
+
     </data>
 </odoo>
 
